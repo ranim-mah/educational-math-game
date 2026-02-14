@@ -1,0 +1,1051 @@
+<!doctype html>
+<html lang="fr" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tir à la Corde Maths</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Nunito', sans-serif; }
+    
+    .team-blue { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+    .team-red { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); }
+    
+    .numpad-btn {
+      transition: all 0.15s ease;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+    }
+    .numpad-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+    }
+    .numpad-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .rope-container {
+      position: relative;
+      height: 120px;
+      overflow: hidden;
+    }
+    
+    .rope {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      transition: left 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    
+    .flag {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      transition: left 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      z-index: 10;
+    }
+    
+    .kid {
+      animation: pull 0.5s ease-in-out infinite alternate;
+    }
+    
+    .kid-right {
+      animation: pull-right 0.5s ease-in-out infinite alternate;
+    }
+    
+    @keyframes pull {
+      from { transform: translateX(0); }
+      to { transform: translateX(-5px); }
+    }
+    
+    @keyframes pull-right {
+      from { transform: translateX(0); }
+      to { transform: translateX(5px); }
+    }
+    
+    .score-badge {
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(10px);
+    }
+    
+    .timer-pulse {
+      animation: pulse 1s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    .correct-flash {
+      animation: flash-green 0.5s ease;
+    }
+    
+    .wrong-flash {
+      animation: flash-red 0.5s ease;
+    }
+    
+    @keyframes flash-green {
+      0%, 100% { background-color: transparent; }
+      50% { background-color: rgba(34, 197, 94, 0.5); }
+    }
+    
+    @keyframes flash-red {
+      0%, 100% { background-color: transparent; }
+      50% { background-color: rgba(239, 68, 68, 0.5); }
+    }
+    
+    .celebration {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.8);
+      z-index: 100;
+    }
+    
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      animation: confetti-fall 3s linear infinite;
+    }
+    
+    @keyframes confetti-fall {
+      0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+
+    .modal-box {
+      background: white;
+      border-radius: 2rem;
+      padding: 2rem;
+      max-width: 600px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .best-score {
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      padding: 1rem;
+      border-radius: 1rem;
+      color: white;
+      font-weight: bold;
+      text-align: center;
+      margin: 1rem 0;
+    }
+
+    .combo-badge {
+      background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-weight: bold;
+      font-size: 0.9rem;
+      display: inline-block;
+      animation: bounce 0.5s ease;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+
+    .rope-bar-container {
+      width: 100%;
+      height: 1rem;
+      background: rgba(0,0,0,0.2);
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+
+    .rope-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6 0%, #ec4899 50%, #ef4444 100%);
+      width: 50%;
+      transition: width 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .stat-box {
+      background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+      padding: 1rem;
+      border-radius: 1rem;
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: #6b7280;
+      font-weight: 600;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: #1f2937;
+      margin-top: 0.25rem;
+    }
+
+    .difficulty-btn, .timer-btn, .exercise-btn, .mode-btn {
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 3px solid transparent;
+    }
+
+    .difficulty-btn.active, .timer-btn.active, .exercise-btn.active {
+      border-color: #1f2937;
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    }
+
+    .difficulty-easy { background: linear-gradient(135deg, #34d399 0%, #10b981 100%); color: white; }
+    .difficulty-medium { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: white; }
+    .difficulty-hard { background: linear-gradient(135deg, #f87171 0%, #ef4444 100%); color: white; }
+
+    .timer-btn { background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%); color: white; }
+    
+    .exercise-btn { font-size: 0.85rem; padding: 0.5rem 0.75rem; }
+    .exercise-add { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; }
+    .exercise-sub { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; }
+    .exercise-mul { background: linear-gradient(135deg, #ec4899 0%, #be123c 100%); color: white; }
+    .exercise-div { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+    .exercise-mix { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); color: white; }
+
+    .keyboard-hint {
+      background: rgba(0,0,0,0.05);
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      font-size: 0.75rem;
+      color: #6b7280;
+      margin-top: 1rem;
+      text-align: center;
+    }
+  </style>
+ </head>
+ <body class="h-full overflow-auto">
+  <div id="app" class="min-h-full bg-gradient-to-b from-amber-100 to-orange-100 flex flex-col">
+   
+   <header class="bg-gradient-to-r from-purple-600 via-pink-500 to-orange-500 py-3 px-4 shadow-lg">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+     <h1 id="game-title" class="text-2xl md:text-3xl font-black text-white drop-shadow-lg">🎯 Tir à la Corde Maths</h1>
+     <div id="timer" class="bg-white/20 backdrop-blur px-6 py-2 rounded-full">
+      <span class="text-3xl font-black text-white timer-pulse" id="time-display">00:30</span>
+     </div>
+    </div>
+   </header>
+
+   <div id="mode-modal" class="modal-overlay">
+    <div class="modal-box text-center">
+     <h2 class="text-3xl font-black mb-4 text-gray-800">🎯 Configuration</h2>
+     
+     <div class="mb-6">
+      <label class="block font-bold mb-3 text-gray-700">⏱️ Durée :</label>
+      <div class="flex gap-2 flex-wrap justify-center">
+       <button onclick="setTimer(30)" class="timer-btn active" id="timer-30">30s</button>
+       <button onclick="setTimer(60)" class="timer-btn" id="timer-60">1min</button>
+       <button onclick="setTimer(120)" class="timer-btn" id="timer-120">2min</button>
+       <button onclick="setTimer(180)" class="timer-btn" id="timer-180">3min</button>
+      </div>
+     </div>
+
+     <!-- Sélection de difficulté -->
+     <div class="mb-6">
+      <label class="block font-bold mb-3 text-gray-700">📊 Difficulté :</label>
+      <div class="flex gap-2 flex-wrap justify-center">
+       <button onclick="setDifficulty('easy')" class="difficulty-btn difficulty-easy active" id="diff-easy">🟢 Facile</button>
+       <button onclick="setDifficulty('medium')" class="difficulty-btn difficulty-medium" id="diff-medium">🟡 Moyen</button>
+       <button onclick="setDifficulty('hard')" class="difficulty-btn difficulty-hard" id="diff-hard">🔴 Difficile</button>
+      </div>
+     </div>
+
+     <!-- Sélection d'exercice -->
+     <div class="mb-6">
+      <label class="block font-bold mb-3 text-gray-700">📝 Type d'exercice :</label>
+      <div class="grid grid-cols-3 gap-2">
+       <button onclick="setExerciseType('add')" class="exercise-btn exercise-add active" id="ex-add">➕ Addition</button>
+       <button onclick="setExerciseType('sub')" class="exercise-btn exercise-sub" id="ex-sub">➖ Soustraction</button>
+       <button onclick="setExerciseType('mul')" class="exercise-btn exercise-mul" id="ex-mul">✖️ Multiplication</button>
+       <button onclick="setExerciseType('div')" class="exercise-btn exercise-div" id="ex-div">÷ Division</button>
+       <button onclick="setExerciseType('mix')" class="exercise-btn exercise-mix col-span-2" id="ex-mix">🎲 Mix</button>
+      </div>
+     </div>
+
+     <!-- Sélection de mode -->
+     <div class="mb-6">
+      <label class="block font-bold mb-3 text-gray-700">🎮 Mode de jeu :</label>
+      <button onclick="selectMode('duo')" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-bold text-xl px-6 py-4 rounded-xl mb-3 transform hover:scale-105 transition-all">
+       👥 Mode Duo (2 joueurs)
+      </button>
+      <button onclick="selectMode('solo')" class="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-400 hover:to-purple-500 text-white font-bold text-xl px-6 py-4 rounded-xl mb-3 transform hover:scale-105 transition-all">
+       🤖 Mode Solo (vs l'IA)
+      </button>
+      <button onclick="selectMode('class')" class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold text-xl px-6 py-4 rounded-xl transform hover:scale-105 transition-all">
+       🏫 Mode Classe (20 questions)
+      </button>
+     </div>
+
+     <div class="best-score">
+      <div>🏆 Meilleurs Scores</div>
+      <div class="text-lg">
+       Duo: <span id="best-duo">0</span> | Solo: <span id="best-solo">0</span> | Classe: <span id="best-class">0</span>
+      </div>
+     </div>
+
+     <div class="keyboard-hint">
+      💡 Astuce : Utilisez votre clavier (0-9) et Entrée pour valider !
+     </div>
+    </div>
+   </div>
+
+   <main class="flex-1 flex flex-col p-4 gap-4">
+    
+    <div class="flex justify-between items-center max-w-6xl mx-auto w-full flex-wrap gap-2">
+     <div class="score-badge team-blue text-white px-6 py-3 rounded-2xl shadow-lg">
+      <div id="team1-label" class="text-sm font-bold opacity-80">Équipe Bleue</div>
+      <div class="text-4xl font-black" id="score1">0</div>
+      <div id="combo1-display" class="text-xs mt-1"></div>
+     </div>
+     
+     <div class="flex gap-2 items-center flex-wrap justify-center">
+      <div id="difficulty-badge" class="bg-white/30 text-white px-4 py-2 rounded-full font-bold">
+       <span id="diff-text">Facile</span>
+      </div>
+      <div id="exercise-badge" class="bg-white/30 text-white px-4 py-2 rounded-full font-bold">
+       <span id="exercise-text">Addition</span>
+      </div>
+      <div id="solo-mode-badge" class="bg-white/30 text-white px-4 py-2 rounded-full font-bold hidden">🤖 Mode Solo</div>
+      <div id="class-mode-badge" class="bg-white/30 text-white px-4 py-2 rounded-full font-bold hidden">🏫 Mode Classe</div>
+     </div>
+     
+     <div class="score-badge team-red text-white px-6 py-3 rounded-2xl shadow-lg">
+      <div id="team2-label" class="text-sm font-bold opacity-80">Équipe Rouge</div>
+      <div class="text-4xl font-black" id="score2">0</div>
+      <div id="combo2-display" class="text-xs mt-1"></div>
+     </div>
+    </div>
+
+    <div id="class-progress-container" class="hidden max-w-6xl mx-auto w-full bg-white/30 rounded-2xl p-4">
+     <div class="flex justify-between items-center mb-2">
+      <span class="font-bold text-white">Progression</span>
+      <span class="font-bold text-white"><span id="class-progress">0</span>/20</span>
+     </div>
+     <div class="w-full bg-gray-300 h-4 rounded-full overflow-hidden">
+      <div id="class-progress-bar" class="bg-gradient-to-r from-purple-500 to-pink-500 h-4 rounded-full transition-all" style="width: 0%"></div>
+     </div>
+    </div>
+
+    <div id="rope-section" class="hidden max-w-6xl mx-auto w-full">
+     <div class="rope-container bg-gradient-to-b from-green-400 to-green-600 rounded-3xl shadow-inner">
+      <div class="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1">
+       <div class="kid text-4xl">👦</div>
+       <div class="kid text-4xl" style="animation-delay: 0.1s">👧</div>
+       <div class="kid text-4xl" style="animation-delay: 0.2s">🧒</div>
+      </div>
+      
+      <div class="rope" id="rope" style="width: 300px;">
+       <svg viewBox="0 0 300 20" class="w-full h-8">
+        <defs>
+         <pattern id="rope-pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+          <rect fill="#8B4513" width="20" height="20"/>
+          <path d="M0,10 Q5,5 10,10 T20,10" stroke="#A0522D" stroke-width="3" fill="none"/>
+         </pattern>
+        </defs>
+        <rect x="0" y="6" width="300" height="8" fill="url(#rope-pattern)" rx="4"/>
+       </svg>
+      </div>
+      
+      <div class="flag" id="flag">
+       <div class="text-5xl">🚩</div>
+      </div>
+      
+      <div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1">
+       <div class="kid-right text-4xl" style="animation-delay: 0.2s">🧒</div>
+       <div class="kid-right text-4xl" style="animation-delay: 0.1s">👧</div>
+       <div class="kid-right text-4xl">👦</div>
+      </div>
+      
+      <div class="absolute left-8 top-0 bottom-0 w-1 bg-blue-300/50 rounded"></div>
+      <div class="absolute right-8 top-0 bottom-0 w-1 bg-red-300/50 rounded"></div>
+     </div>
+     
+     <!-- Barre de progression -->
+     <div class="rope-bar-container">
+      <div class="rope-bar" id="rope-bar"></div>
+     </div>
+    </div>
+
+    <div class="flex flex-col md:flex-row gap-4 max-w-6xl mx-auto w-full flex-1">
+     
+     <div class="flex-1 team-blue rounded-3xl p-4 shadow-xl" id="team1-zone">
+      <div class="text-center mb-4">
+       <div class="bg-white/20 rounded-2xl p-4 mb-4">
+        <div class="text-5xl md:text-6xl font-black text-white drop-shadow" id="question1">5 + 10 = ?</div>
+       </div>
+       <div class="bg-white/30 rounded-xl p-3 inline-block min-w-32">
+        <span class="text-4xl font-black text-white" id="answer1">_</span>
+       </div>
+      </div>
+      
+      <div class="grid grid-cols-5 gap-2 max-w-xs mx-auto">
+       <button class="numpad-btn bg-white hover:bg-blue-100 text-blue-700 font-bold text-xl py-3 rounded-xl" onclick="addDigit(1, '0')">0</button>
+       <button class="numpad-btn bg-white hover:bg-blue-100 text-blue-700 font-bold text-xl py-3 rounded-xl" onclick="addDigit(1, '1')">1</button>
+       <button class="numpad-btn bg-white hover:bg-blue-100 text-blue-700 font-bold text-xl py-3 rounded-xl" onclick="addDigit(1, '2')">2</button>
+       <button class="numpad-btn bg-white hover:bg-blue-100 text-blue-700 font-bold text-xl py-3 rounded-xl" onclick="addDigit(1, '3')">3</button>
+       <button class="numpad-btn bg-white hover:bg-blue-100 text-blue-700 font-bold text-xl py-3 rounded-xl" onclick="addDigit(1, '4')">4</button>
+       <button class="numpad-btn bg-white hover:bg-blue-100 text-blue-700 font-bold text-xl py-3 rounded-xl" onclick="addDigit(1, '5')">5</button>
+       <button class="numpad-btn bg-white hover:bg-blue-100 text-blue-700 font-bold text-xl py-3 rounded-xl" onclick="addDigit(1, '6')">6</button>
+       <button class="numpad-btn bg-white hover:bg-blue-100 text-blue-700 font-bold text-xl py-3 rounded-xl" onclick="addDigit(1, '7')">7</button>
+       <button class="numpad-btn bg-white hover:bg-blue-100 text-blue-700 font-bold text-xl py-3 rounded-xl" onclick="addDigit(1, '8')">8</button>
+       <button class="numpad-btn bg-white hover:bg-blue-100 text-blue-700 font-bold text-xl py-3 rounded-xl" onclick="addDigit(1, '9')">9</button>
+      </div>
+      
+      <div class="flex gap-2 max-w-xs mx-auto mt-2">
+       <button class="numpad-btn flex-1 bg-yellow-400 hover:bg-yellow-300 text-yellow-800 font-bold text-lg py-3 rounded-xl" onclick="clearAnswer(1)">⌫</button>
+       <button class="numpad-btn flex-1 bg-green-500 hover:bg-green-400 text-white font-bold text-lg py-3 rounded-xl" onclick="checkAnswer(1)">✓ Valider</button>
+      </div>
+     </div>
+
+     <div class="flex-1 team-red rounded-3xl p-4 shadow-xl" id="team2-zone">
+      <div class="text-center mb-4">
+       <div class="bg-white/20 rounded-2xl p-4 mb-4">
+        <div class="text-5xl md:text-6xl font-black text-white drop-shadow" id="question2">6 + 8 = ?</div>
+       </div>
+       <div class="bg-white/30 rounded-xl p-3 inline-block min-w-32">
+        <span class="text-4xl font-black text-white" id="answer2">_</span>
+       </div>
+      </div>
+      
+      <!-- Pavé numérique -->
+      <div class="grid grid-cols-5 gap-2 max-w-xs mx-auto">
+       <button class="numpad-btn bg-white hover:bg-red-100 text-red-700 font-bold text-xl py-3 rounded-xl" onclick="addDigit(2, '0')">0</button>
+       <button class="numpad-btn bg-white hover:bg-red-100 text-red-700 font-bold text-xl py-3 rounded-xl" onclick="addDigit(2, '1')">1</button>
+       <button class="numpad-btn bg-white hover:bg-red-100 text-red-700 font-bold text-xl py-3 rounded-xl" onclick="addDigit(2, '2')">2</button>
+       <button class="numpad-btn bg-white hover:bg-red-100 text-red-700 font-bold text-xl py-3 rounded-xl" onclick="addDigit(2, '3')">3</button>
+       <button class="numpad-btn bg-white hover:bg-red-100 text-red-700 font-bold text-xl py-3 rounded-xl" onclick="addDigit(2, '4')">4</button>
+       <button class="numpad-btn bg-white hover:bg-red-100 text-red-700 font-bold text-xl py-3 rounded-xl" onclick="addDigit(2, '5')">5</button>
+       <button class="numpad-btn bg-white hover:bg-red-100 text-red-700 font-bold text-xl py-3 rounded-xl" onclick="addDigit(2, '6')">6</button>
+       <button class="numpad-btn bg-white hover:bg-red-100 text-red-700 font-bold text-xl py-3 rounded-xl" onclick="addDigit(2, '7')">7</button>
+       <button class="numpad-btn bg-white hover:bg-red-100 text-red-700 font-bold text-xl py-3 rounded-xl" onclick="addDigit(2, '8')">8</button>
+       <button class="numpad-btn bg-white hover:bg-red-100 text-red-700 font-bold text-xl py-3 rounded-xl" onclick="addDigit(2, '9')">9</button>
+      </div>
+      
+      <div class="flex gap-2 max-w-xs mx-auto mt-2">
+       <button class="numpad-btn flex-1 bg-yellow-400 hover:bg-yellow-300 text-yellow-800 font-bold text-lg py-3 rounded-xl" onclick="clearAnswer(2)">⌫</button>
+       <button class="numpad-btn flex-1 bg-green-500 hover:bg-green-400 text-white font-bold text-lg py-3 rounded-xl" onclick="checkAnswer(2)">✓ Valider</button>
+      </div>
+     </div>
+    </div>
+
+    <div class="flex gap-2 max-w-6xl mx-auto w-full justify-center flex-wrap">
+     <button id="start-btn" onclick="startGame()" class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-black text-2xl px-12 py-4 rounded-full shadow-xl transform hover:scale-105 transition-all">
+      🎮 Commencer !
+     </button>
+     <button id="pause-btn" onclick="pauseGame()" class="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-white font-black text-xl px-8 py-4 rounded-full shadow-xl transform hover:scale-105 transition-all hidden">
+      ⏸️ Pause
+     </button>
+    </div>
+   </main>
+
+   <!-- Modal de victoire -->
+   <div id="victory-modal" class="celebration hidden">
+    <div class="confetti bg-yellow-400" style="left: 10%; animation-delay: 0s;"></div>
+    <div class="confetti bg-pink-400" style="left: 20%; animation-delay: 0.2s;"></div>
+    <div class="confetti bg-blue-400" style="left: 30%; animation-delay: 0.4s;"></div>
+    <div class="confetti bg-green-400" style="left: 40%; animation-delay: 0.6s;"></div>
+    <div class="confetti bg-purple-400" style="left: 50%; animation-delay: 0.8s;"></div>
+    <div class="confetti bg-orange-400" style="left: 60%; animation-delay: 1s;"></div>
+    <div class="confetti bg-red-400" style="left: 70%; animation-delay: 1.2s;"></div>
+    <div class="confetti bg-teal-400" style="left: 80%; animation-delay: 1.4s;"></div>
+    <div class="confetti bg-indigo-400" style="left: 90%; animation-delay: 1.6s;"></div>
+    
+    <div class="bg-white rounded-3xl p-8 text-center shadow-2xl max-w-md mx-4 z-10 max-h-90 overflow-y-auto">
+     <div class="text-6xl mb-4" id="winner-emoji">🏆</div>
+     <h2 class="text-3xl font-black mb-2" id="winner-text">Victoire !</h2>
+     <p class="text-xl text-gray-600 mb-2" id="winner-subtext">Félicitations !</p>
+     <p class="text-lg text-yellow-600 font-bold mb-4" id="new-record" hidden>🌟 Nouveau record !</p>
+     
+     <div class="stats-grid mb-4">
+      <div class="stat-box">
+       <div class="stat-label">Score Final</div>
+       <div class="stat-value" id="final-score">0</div>
+      </div>
+      <div class="stat-box">
+       <div class="stat-label">% Réussite</div>
+       <div class="stat-value" id="accuracy-stat">0%</div>
+      </div>
+      <div class="stat-box">
+       <div class="stat-label">Questions</div>
+       <div class="stat-value" id="questions-stat">0</div>
+      </div>
+      <div class="stat-box">
+       <div class="stat-label">Meilleure Combo</div>
+       <div class="stat-value" id="combo-stat">0</div>
+      </div>
+     </div>
+     
+     <button onclick="resetGame()" class="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold text-xl px-8 py-3 rounded-full hover:from-purple-400 hover:to-pink-400 transition-all">
+      🔄 Rejouer
+     </button>
+    </div>
+   </div>
+  </div>
+
+  <script>
+    const config = {
+      timer_duration: 30,
+      difficulty: "easy",
+      exerciseType: "add"
+    };
+
+    let bestScores = JSON.parse(localStorage.getItem("bestScores")) || { duo: 0, solo: 0, class: 0 };
+
+    function playSound(type) {
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        
+        if (type === "correct") {
+          osc.frequency.value = 800;
+          gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+          osc.start(audioContext.currentTime);
+          osc.stop(audioContext.currentTime + 0.2);
+        } else if (type === "wrong") {
+          osc.frequency.value = 300;
+          gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+          osc.start(audioContext.currentTime);
+          osc.stop(audioContext.currentTime + 0.1);
+        } else if (type === "victory") {
+          const notes = [523, 659, 784, 1047];
+          notes.forEach((freq, i) => {
+            const osc2 = audioContext.createOscillator();
+            const gain2 = audioContext.createGain();
+            osc2.connect(gain2);
+            gain2.connect(audioContext.destination);
+            osc2.frequency.value = freq;
+            const time = audioContext.currentTime + (i * 0.1);
+            gain2.gain.setValueAtTime(0.3, time);
+            gain2.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
+            osc2.start(time);
+            osc2.stop(time + 0.1);
+          });
+          return;
+        }
+      } catch (e) {}
+    }
+
+    // État du jeu
+    let gameState = {
+      score1: 0,
+      score2: 0,
+      answer1: "",
+      answer2: "",
+      question1: null,
+      question2: null,
+      ropePosition: 50,
+      timeLeft: 30,
+      isRunning: false,
+      isPaused: false,
+      timerInterval: null,
+      soloMode: false,
+      classMode: false,
+      currentMode: null,
+      combo1: 0,
+      combo2: 0,
+      maxCombo1: 0,
+      maxCombo2: 0,
+      totalQuestions1: 0,
+      correctAnswers1: 0,
+      totalQuestions2: 0,
+      correctAnswers2: 0,
+      aiThinkingTime: null,
+      currentTeam: 1
+    };
+
+    function generateQuestion(difficulty, exerciseType) {
+      if (exerciseType === "mix") {
+        const types = ["add", "sub", "mul", "div"];
+        exerciseType = types[Math.floor(Math.random() * types.length)];
+      }
+
+      let operation;
+      
+      if (exerciseType === "add") {
+        if (difficulty === "easy") {
+          const a = Math.floor(Math.random() * 10) + 1;
+          const b = Math.floor(Math.random() * 10) + 1;
+          operation = { a, b, op: "+", result: a + b };
+        } else if (difficulty === "medium") {
+          const a = Math.floor(Math.random() * 20) + 5;
+          const b = Math.floor(Math.random() * 20) + 5;
+          operation = { a, b, op: "+", result: a + b };
+        } else {
+          const a = Math.floor(Math.random() * 50) + 20;
+          const b = Math.floor(Math.random() * 50) + 20;
+          operation = { a, b, op: "+", result: a + b };
+        }
+      } else if (exerciseType === "sub") {
+        if (difficulty === "easy") {
+          const a = Math.floor(Math.random() * 10) + 10;
+          const b = Math.floor(Math.random() * a);
+          operation = { a, b, op: "-", result: a - b };
+        } else if (difficulty === "medium") {
+          const a = Math.floor(Math.random() * 30) + 15;
+          const b = Math.floor(Math.random() * a);
+          operation = { a, b, op: "-", result: a - b };
+        } else {
+          const a = Math.floor(Math.random() * 100) + 50;
+          const b = Math.floor(Math.random() * (a - 10)) + 10;
+          operation = { a, b, op: "-", result: a - b };
+        }
+      } else if (exerciseType === "mul") {
+        if (difficulty === "easy") {
+          const a = Math.floor(Math.random() * 5) + 2;
+          const b = Math.floor(Math.random() * 5) + 2;
+          operation = { a, b, op: "×", result: a * b };
+        } else if (difficulty === "medium") {
+          const a = Math.floor(Math.random() * 10) + 2;
+          const b = Math.floor(Math.random() * 8) + 2;
+          operation = { a, b, op: "×", result: a * b };
+        } else {
+          const a = Math.floor(Math.random() * 12) + 5;
+          const b = Math.floor(Math.random() * 12) + 5;
+          operation = { a, b, op: "×", result: a * b };
+        }
+      } else if (exerciseType === "div") {
+        if (difficulty === "easy") {
+          const b = Math.floor(Math.random() * 5) + 2;
+          const result = Math.floor(Math.random() * 5) + 2;
+          const a = result * b;
+          operation = { a, b, op: "÷", result };
+        } else if (difficulty === "medium") {
+          const b = Math.floor(Math.random() * 8) + 2;
+          const result = Math.floor(Math.random() * 8) + 2;
+          const a = result * b;
+          operation = { a, b, op: "÷", result };
+        } else {
+          const b = Math.floor(Math.random() * 10) + 5;
+          const result = Math.floor(Math.random() * 10) + 5;
+          const a = result * b;
+          operation = { a, b, op: "÷", result };
+        }
+      }
+
+      return operation;
+    }
+
+    function displayQuestion(team) {
+      const q = gameState[`question${team}`];
+      if (q) {
+        document.getElementById(`question${team}`).textContent = `${q.a} ${q.op} ${q.b} = ?`;
+      }
+    }
+
+    // Configuration
+    function setTimer(seconds) {
+      config.timer_duration = seconds;
+      document.querySelectorAll(".timer-btn").forEach(btn => btn.classList.remove("active"));
+      document.getElementById(`timer-${seconds}`).classList.add("active");
+      
+      const mins = Math.floor(seconds / 60).toString().padStart(2, "0");
+      const secs = (seconds % 60).toString().padStart(2, "0");
+      document.getElementById("time-display").textContent = `${mins}:${secs}`;
+    }
+
+    function setDifficulty(level) {
+      config.difficulty = level;
+      document.querySelectorAll(".difficulty-btn").forEach(btn => btn.classList.remove("active"));
+      document.getElementById(`diff-${level}`).classList.add("active");
+      updateDifficultyBadge();
+    }
+
+    function setExerciseType(type) {
+      config.exerciseType = type;
+      document.querySelectorAll(".exercise-btn").forEach(btn => btn.classList.remove("active"));
+      document.getElementById(`ex-${type}`).classList.add("active");
+      updateExerciseBadge();
+    }
+
+    function updateDifficultyBadge() {
+      const labels = { easy: "Facile", medium: "Moyen", hard: "Difficile" };
+      document.getElementById("diff-text").textContent = labels[config.difficulty];
+    }
+
+    function updateExerciseBadge() {
+      const labels = { 
+        add: "Addition", 
+        sub: "Soustraction", 
+        mul: "Multiplication", 
+        div: "Division", 
+        mix: "Mix" 
+      };
+      document.getElementById("exercise-text").textContent = labels[config.exerciseType];
+    }
+
+    // Gestion des réponses
+    function addDigit(team, digit) {
+      if (!gameState.isRunning || gameState.isPaused) return;
+      if (gameState[`answer${team}`].length < 3) {
+        gameState[`answer${team}`] += digit;
+        document.getElementById(`answer${team}`).textContent = gameState[`answer${team}`] || "_";
+      }
+    }
+
+    function clearAnswer(team) {
+      gameState[`answer${team}`] = "";
+      document.getElementById(`answer${team}`).textContent = "_";
+    }
+
+    function checkAnswer(team) {
+      if (!gameState.isRunning || gameState.isPaused) return;
+
+      const answer = parseInt(gameState[`answer${team}`]);
+      const correct = gameState[`question${team}`].result;
+      const zone = document.getElementById(`team${team}-zone`);
+      
+      gameState[`totalQuestions${team}`]++;
+
+      if (answer === correct) {
+        playSound("correct");
+        zone.classList.add("correct-flash");
+        setTimeout(() => zone.classList.remove("correct-flash"), 500);
+
+        gameState[`combo${team}`]++;
+        gameState[`maxCombo${team}`] = Math.max(gameState[`maxCombo${team}`], gameState[`combo${team}`]);
+        gameState[`correctAnswers${team}`]++;
+
+        let points = 1;
+        if (gameState[`combo${team}`] >= 3) points = 2;
+        if (gameState[`combo${team}`] >= 5) points = 3;
+
+        gameState[`score${team}`] += points;
+        document.getElementById(`score${team}`).textContent = gameState[`score${team}`];
+        updateComboDisplay(team);
+
+        if (!gameState.classMode) {
+          gameState.ropePosition = team === 1 
+            ? Math.max(10, gameState.ropePosition - 10) 
+            : Math.min(90, gameState.ropePosition + 10);
+          updateRopePosition();
+
+          if (gameState.ropePosition <= 10) {
+            endGame(1);
+            return;
+          } else if (gameState.ropePosition >= 90) {
+            endGame(2);
+            return;
+          }
+        } else {
+          document.getElementById("class-progress").textContent = gameState.score1;
+          document.getElementById("class-progress-bar").style.width = `${(gameState.score1 / 20) * 100}%`;
+          
+          if (gameState.score1 >= 20) {
+            endGame(1);
+            return;
+          }
+        }
+
+        gameState[`question${team}`] = generateQuestion(config.difficulty, config.exerciseType);
+        displayQuestion(team);
+      } else {
+        playSound("wrong");
+        zone.classList.add("wrong-flash");
+        setTimeout(() => zone.classList.remove("wrong-flash"), 500);
+        gameState[`combo${team}`] = 0;
+        updateComboDisplay(team);
+      }
+
+      clearAnswer(team);
+    }
+
+    function updateComboDisplay(team) {
+      const display = document.getElementById(`combo${team}-display`);
+      if (gameState[`combo${team}`] >= 3) {
+        display.innerHTML = `<span class="combo-badge">🔥 COMBO x${gameState[`combo${team}`]}</span>`;
+      } else {
+        display.innerHTML = "";
+      }
+    }
+
+    function updateRopePosition() {
+      const rope = document.getElementById("rope");
+      const flag = document.getElementById("flag");
+      const bar = document.getElementById("rope-bar");
+      rope.style.left = `${gameState.ropePosition}%`;
+      flag.style.left = `${gameState.ropePosition}%`;
+      bar.style.width = `${gameState.ropePosition}%`;
+    }
+
+    // IA
+    function soloAIMove() {
+      if (!gameState.isRunning || !gameState.soloMode || gameState.isPaused) return;
+
+      const successRate = config.difficulty === "easy" ? 0.7 : config.difficulty === "medium" ? 0.5 : 0.3;
+
+      if (Math.random() < successRate) {
+        gameState.answer2 = String(gameState.question2.result);
+        checkAnswer(2);
+      } else {
+        playSound("wrong");
+        const zone = document.getElementById("team2-zone");
+        zone.classList.add("wrong-flash");
+        setTimeout(() => zone.classList.remove("wrong-flash"), 500);
+        gameState.combo2 = 0;
+        updateComboDisplay(2);
+        setTimeout(() => {
+          gameState.answer2 = "";
+          document.getElementById("answer2").textContent = "_";
+        }, 500);
+      }
+
+      if (gameState.isRunning && gameState.soloMode) {
+        const aiSpeed = config.difficulty === "easy" ? 3000 : config.difficulty === "medium" ? 2000 : 1500;
+        gameState.aiThinkingTime = setTimeout(soloAIMove, aiSpeed + Math.random() * 1000);
+      }
+    }
+
+    // Modes de jeu
+    function selectMode(mode) {
+      gameState.currentMode = mode;
+      gameState.soloMode = mode === "solo";
+      gameState.classMode = mode === "class";
+
+      document.getElementById("mode-modal").style.display = "none";
+
+      if (gameState.classMode) {
+        document.getElementById("class-mode-badge").classList.remove("hidden");
+        document.getElementById("rope-section").classList.add("hidden");
+        document.getElementById("class-progress-container").classList.remove("hidden");
+        document.getElementById("team2-zone").classList.add("hidden");
+        document.getElementById("team1-label").textContent = "🏫 Classe";
+        document.getElementById("solo-mode-badge").classList.add("hidden");
+      } else {
+        document.getElementById("class-mode-badge").classList.add("hidden");
+        document.getElementById("rope-section").classList.remove("hidden");
+        document.getElementById("class-progress-container").classList.add("hidden");
+        document.getElementById("team2-zone").classList.remove("hidden");
+        
+        if (gameState.soloMode) {
+          document.getElementById("solo-mode-badge").classList.remove("hidden");
+          document.getElementById("team2-label").textContent = "🤖 IA";
+        } else {
+          document.getElementById("solo-mode-badge").classList.add("hidden");
+          document.getElementById("team1-label").textContent = "Équipe Bleue";
+          document.getElementById("team2-label").textContent = "Équipe Rouge";
+        }
+      }
+
+      startGame();
+    }
+
+    // Jeu
+    function startGame() {
+      gameState.isRunning = true;
+      gameState.isPaused = false;
+      gameState.score1 = 0;
+      gameState.score2 = 0;
+      gameState.combo1 = 0;
+      gameState.combo2 = 0;
+      gameState.maxCombo1 = 0;
+      gameState.maxCombo2 = 0;
+      gameState.totalQuestions1 = 0;
+      gameState.correctAnswers1 = 0;
+      gameState.totalQuestions2 = 0;
+      gameState.correctAnswers2 = 0;
+      gameState.ropePosition = 50;
+      gameState.timeLeft = config.timer_duration;
+
+      document.getElementById("score1").textContent = "0";
+      document.getElementById("score2").textContent = "0";
+      document.getElementById("start-btn").textContent = "🎮 En cours...";
+      document.getElementById("start-btn").disabled = true;
+      document.getElementById("pause-btn").classList.remove("hidden");
+      document.getElementById("class-progress").textContent = "0";
+      document.getElementById("class-progress-bar").style.width = "0%";
+
+      gameState.question1 = generateQuestion(config.difficulty, config.exerciseType);
+      gameState.question2 = generateQuestion(config.difficulty, config.exerciseType);
+      displayQuestion(1);
+      displayQuestion(2);
+      updateRopePosition();
+
+      gameState.timerInterval = setInterval(() => {
+        if (!gameState.isPaused) {
+          gameState.timeLeft--;
+          const mins = Math.floor(gameState.timeLeft / 60).toString().padStart(2, "0");
+          const secs = (gameState.timeLeft % 60).toString().padStart(2, "0");
+          document.getElementById("time-display").textContent = `${mins}:${secs}`;
+
+          if (gameState.timeLeft <= 0) {
+            if (gameState.classMode) {
+              endGame(1);
+            } else if (gameState.score1 > gameState.score2) {
+              endGame(1);
+            } else if (gameState.score2 > gameState.score1) {
+              endGame(2);
+            } else {
+              endGame(0);
+            }
+          }
+        }
+      }, 1000);
+
+      if (gameState.soloMode) {
+        setTimeout(soloAIMove, 2000);
+      }
+    }
+
+    function pauseGame() {
+      gameState.isPaused = !gameState.isPaused;
+      const btn = document.getElementById("pause-btn");
+      btn.textContent = gameState.isPaused ? "▶️ Reprendre" : "⏸️ Pause";
+    }
+
+    function endGame(winner) {
+      gameState.isRunning = false;
+      clearInterval(gameState.timerInterval);
+      if (gameState.aiThinkingTime) clearTimeout(gameState.aiThinkingTime);
+
+      playSound("victory");
+
+      const modal = document.getElementById("victory-modal");
+      const winnerText = document.getElementById("winner-text");
+      const winnerSubtext = document.getElementById("winner-subtext");
+      const winnerEmoji = document.getElementById("winner-emoji");
+      const newRecord = document.getElementById("new-record");
+
+      let isNewRecord = false;
+      const modeKey = gameState.soloMode ? "solo" : gameState.classMode ? "class" : "duo";
+      const maxScore = gameState.classMode ? gameState.score1 : Math.max(gameState.score1, gameState.score2);
+
+      if (maxScore > bestScores[modeKey]) {
+        bestScores[modeKey] = maxScore;
+        localStorage.setItem("bestScores", JSON.stringify(bestScores));
+        isNewRecord = true;
+        newRecord.removeAttribute("hidden");
+        document.getElementById(`best-${modeKey}`).textContent = maxScore;
+      } else {
+        newRecord.setAttribute("hidden", "");
+      }
+
+      const totalQuestions = gameState.totalQuestions1 + (gameState.classMode ? 0 : gameState.totalQuestions2);
+      const correctAnswers = gameState.correctAnswers1 + (gameState.classMode ? 0 : gameState.correctAnswers2);
+      const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+      const maxCombo = Math.max(gameState.maxCombo1, gameState.classMode ? 0 : gameState.maxCombo2);
+
+      document.getElementById("final-score").textContent = maxScore;
+      document.getElementById("accuracy-stat").textContent = `${accuracy}%`;
+      document.getElementById("questions-stat").textContent = totalQuestions;
+      document.getElementById("combo-stat").textContent = `x${maxCombo}`;
+
+      if (winner === 1) {
+        winnerText.textContent = gameState.soloMode ? "🎉 Victoire !" : gameState.classMode ? "🏫 Classe réussie !" : "Équipe Bleue gagne !";
+        winnerSubtext.textContent = gameState.classMode ? `Score: ${gameState.score1}/20` : `Score: ${gameState.score1} - ${gameState.score2}`;
+        winnerEmoji.textContent = gameState.soloMode ? "🌟" : gameState.classMode ? "🎓" : "🎉💙";
+        winnerText.className = "text-3xl font-black mb-2 text-blue-600";
+      } else if (winner === 2) {
+        winnerText.textContent = gameState.soloMode ? "🤖 L'IA a gagné !" : "Équipe Rouge gagne !";
+        winnerSubtext.textContent = `Score: ${gameState.score1} - ${gameState.score2}`;
+        winnerEmoji.textContent = gameState.soloMode ? "🤖" : "🎉❤️";
+        winnerText.className = "text-3xl font-black mb-2 text-red-600";
+      } else {
+        winnerText.textContent = "Égalité !";
+        winnerSubtext.textContent = `Score: ${gameState.score1} - ${gameState.score2}`;
+        winnerEmoji.textContent = "🤝";
+        winnerText.className = "text-3xl font-black mb-2 text-purple-600";
+      }
+
+      modal.classList.remove("hidden");
+    }
+
+    function resetGame() {
+      document.getElementById("victory-modal").classList.add("hidden");
+      document.getElementById("start-btn").textContent = "🎮 Commencer !";
+      document.getElementById("start-btn").disabled = false;
+      document.getElementById("pause-btn").classList.add("hidden");
+      
+      gameState.timeLeft = config.timer_duration;
+      const mins = Math.floor(gameState.timeLeft / 60).toString().padStart(2, "0");
+      const secs = (gameState.timeLeft % 60).toString().padStart(2, "0");
+      document.getElementById("time-display").textContent = `${mins}:${secs}`;
+      
+      gameState.ropePosition = 50;
+      updateRopePosition();
+      clearAnswer(1);
+      clearAnswer(2);
+      document.getElementById("combo1-display").innerHTML = "";
+      document.getElementById("combo2-display").innerHTML = "";
+      
+      document.getElementById("mode-modal").style.display = "flex";
+    }
+
+    // Support clavier
+    document.addEventListener("keydown", (e) => {
+      if (!gameState.isRunning || gameState.isPaused) return;
+      
+      const key = e.key;
+      const team = gameState.currentTeam;
+      
+      if (key >= "0" && key <= "9") {
+        addDigit(team, key);
+      } else if (key === "Enter") {
+        e.preventDefault();
+        checkAnswer(team);
+      } else if (key === "Backspace" || key === "Delete") {
+        e.preventDefault();
+        clearAnswer(team);
+      } else if (key === " ") {
+        e.preventDefault();
+        pauseGame();
+      }
+    });
+
+    // Initialisation
+    document.getElementById("best-duo").textContent = bestScores.duo;
+    document.getElementById("best-solo").textContent = bestScores.solo;
+    document.getElementById("best-class").textContent = bestScores.class;
+
+    displayQuestion(1);
+    displayQuestion(2);
+    updateDifficultyBadge();
+    updateExerciseBadge();
+  </script>
+ </body>
+</html>
