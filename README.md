@@ -4,6 +4,8 @@ Un jeu éducatif interactif qui transforme les maths en compétition amusante !
 
 [![Voir la démo](https://img.shields.io/badge/📹-Voir%20la%20démo-red)](Enregistrement%202026-02-13%20231906.mp4)
 
+[![Jouer en ligne](https://img.shields.io/badge/🚀-Jouer%20en%20ligne-green)](https://ranim-mah.github.io/educational-math-game/)
+
 ---
 
 ## Description
@@ -54,9 +56,11 @@ Ouvrir jeu_math.html
 
 ---
 
-## À venir
+## Accès en ligne
 
-📲 **APK Android en préparation !**
+Le jeu est accessible directement en ligne :
+
+👉 [https://ranim-mah.github.io/educational-math-game/](https://ranim-mah.github.io/educational-math-game/)
 
 ---
 
@@ -74,4 +78,4 @@ MIT License - Libre d'utilisation
 
 ⭐ **Si ce projet vous plaît, donnez-lui une étoile !**
 
-📹 [Voir la démo](Enregistrement%202026-02-13%20231906.mp4) | 📲 APK bientôt disponible
+📹 [Voir la démo](Enregistrement%202026-02-13%20231906.mp4) | 🚀 [Jouer en ligne](https://ranim-mah.github.io/educational-math-game/)
